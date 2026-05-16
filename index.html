@@ -634,10 +634,36 @@
     if (ok) el.classList.add('valid'); else el.classList.remove('valid');
   }
 
-  function submitForm() {
-    document.getElementById('form-area').style.display = 'none';
-    const msg = document.getElementById('successMsg');
-    msg.style.display = 'block';
+  // Paste your deployed Apps Script Web App URL here
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdHzPCpbKv-v9PB1TOrFcdNU0_yLFDQUlt0qCIRcF_YdkiBeA6IF515_fdfz5d6Su9/exec';
+
+  async function submitForm() {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+
+    const payload = {
+      username:    document.getElementById('xUsername').value.trim(),
+      commentLink: document.getElementById('commentLink').value.trim(),
+      wallet:      document.getElementById('wallet').value.trim()
+    };
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      // no-cors means we can't read the response body, but a non-thrown fetch = success
+      document.getElementById('form-area').style.display = 'none';
+      const msg = document.getElementById('successMsg');
+      msg.style.display = 'block';
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Apply for Whitelist';
+      alert('Submission failed — please try again.');
+    }
   }
 </script>
 </body>
