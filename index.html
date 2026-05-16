@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Neon Nyan — Whitelist Application</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #ff2255;
+    --red-dim: #ff225533;
+    --red-glow: #ff225566;
+    --green: #00e090;
+    --green-dim: #00e09022;
+    --surface: #09090f;
+    --surface-2: #0d0d18;
+    --surface-3: #111120;
+    --border: #1e1e30;
+    --border-bright: #2e2e48;
+    --text-primary: #e8e8f0;
+    --text-muted: #4a4a68;
+    --text-dim: #2a2a42;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  html, body {
+    background: var(--surface);
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* — Grid noise bg — */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,34,85,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,34,85,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* — Radial glow — */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px; height: 600px;
+    background: radial-gradient(ellipse at center, #ff225508 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative; z-index: 1;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 3rem 1.25rem 4rem;
+  }
+
+  /* — Header — */
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: fadeUp 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
+  }
+
+  .logo-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .logo-eyebrow::before, .logo-eyebrow::after {
+    content: '';
+    height: 1px; width: 32px;
+    background: linear-gradient(90deg, transparent, var(--red));
+  }
+  .logo-eyebrow::after { transform: scaleX(-1); }
+
+  .title {
+    font-family: var(--font-display);
+    font-size: clamp(64px, 16vw, 96px);
+    letter-spacing: 0.08em;
+    line-height: 0.9;
+    color: var(--text-primary);
+    position: relative;
+    display: inline-block;
+  }
+
+  .title-neon {
+    color: var(--red);
+    position: relative;
+    display: block;
+    animation: flicker 6s infinite;
+  }
+
+  @keyframes flicker {
+    0%, 96%, 100% { opacity: 1; }
+    97% { opacity: 0.85; }
+    98% { opacity: 1; }
+    99% { opacity: 0.9; }
+  }
+
+  .subtitle {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-top: 1rem;
+  }
+
+  .meta-row {
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    padding: 4px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--border-bright);
+    color: var(--text-muted);
+  }
+  .pill.live {
+    border-color: var(--red);
+    color: var(--red);
+    position: relative;
+    overflow: hidden;
+  }
+  .pill.live::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--red);
+    opacity: 0.06;
+  }
+  .pill-dot {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--red);
+    display: inline-block; margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.75); }
+  }
+
+  /* — Steps — */
+  .steps { display: flex; flex-direction: column; gap: 12px; }
+
+  .step {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.4s cubic-bezier(0.22,1,0.36,1),
+                box-shadow 0.4s cubic-bezier(0.22,1,0.36,1);
+    opacity: 0;
+  }
+
+  .step.visible { animation: slideIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards; }
+  .step:nth-child(1) { animation-delay: 0.3s; }
+  .step:nth-child(2) { animation-delay: 0.45s; }
+  .step:nth-child(3) { animation-delay: 0.6s; }
+  .step:nth-child(4) { animation-delay: 0.75s; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* shine sweep on hover */
+  .step::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.025), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.5s ease;
+    pointer-events: none;
+  }
+  .step:hover::after { left: 160%; }
+
+  .step.done {
+    border-color: var(--green);
+    box-shadow: 0 0 24px #00e09012, inset 0 0 40px #00e09004;
+  }
+  .step.done::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, #00e09006 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .step-head {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+  }
+
+  .step-badge {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--surface-3);
+    border: 1px solid var(--border-bright);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .step.done .step-badge {
+    background: var(--green-dim);
+    border-color: var(--green);
+    color: var(--green);
+    transform: rotate(5deg) scale(1.05);
+  }
+
+  .step-title {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+  }
+  .step-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  /* Action link button */
+  .action-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;
+    color: var(--red); text-decoration: none;
+    padding: 7px 14px;
+    border: 1px solid var(--red-dim);
+    border-radius: 8px;
+    background: var(--red-dim);
+    margin-bottom: 12px;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    position: relative; overflow: hidden;
+  }
+  .action-btn:hover {
+    background: #ff225518;
+    border-color: var(--red);
+    transform: translateY(-1px);
+  }
+  .action-btn svg { width: 14px; height: 14px; }
+
+  /* Input */
+  .field {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    letter-spacing: 0.04em;
+  }
+  .field::placeholder { color: var(--text-dim); }
+  .field:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px var(--red-dim);
+  }
+  .field.valid {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px var(--green-dim);
+  }
+
+  /* Checkbox */
+  .check-row {
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; user-select: none;
+  }
+  .checkbox {
+    width: 18px; height: 18px; border-radius: 5px;
+    border: 1px solid var(--border-bright);
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    cursor: pointer;
+  }
+  .checkbox.checked {
+    background: var(--green-dim);
+    border-color: var(--green);
+    transform: scale(1.1);
+  }
+  .check-mark {
+    opacity: 0; transform: scale(0) rotate(-45deg);
+    transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    color: var(--green);
+  }
+  .checkbox.checked .check-mark { opacity: 1; transform: scale(1) rotate(0deg); }
+  .check-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+    margin: 2rem 0 1.5rem;
+    opacity: 0;
+    animation: fadeIn 0.5s ease 1.1s forwards;
+  }
+
+  /* Submit */
+  .submit-wrap {
+    opacity: 0;
+    animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) 1s forwards;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--red);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    position: relative; overflow: hidden;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.3s;
+  }
+  .submit-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, #ffffff18 0%, transparent 50%);
+  }
+  .submit-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px var(--red-glow);
+  }
+  .submit-btn:not(:disabled):active {
+    transform: translateY(0) scale(0.99);
+    box-shadow: none;
+  }
+  .submit-btn:disabled {
+    opacity: 0.28;
+    cursor: not-allowed;
+    background: #3a3a5a;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin-bottom: 1.25rem;
+    opacity: 0;
+    animation: fadeIn 0.5s ease 0.9s forwards;
+  }
+  .progress-labels {
+    display: flex; justify-content: space-between;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .progress-bar-bg {
+    height: 3px; background: var(--border-bright);
+    border-radius: 2px; overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--red), #ff6699);
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.22,1,0.36,1);
+    position: relative;
+  }
+  .progress-bar::after {
+    content: '';
+    position: absolute; right: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #ff6699;
+    box-shadow: 0 0 8px #ff6699;
+  }
+
+  /* Success */
+  .success {
+    display: none;
+    text-align: center;
+    padding: 4rem 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  .success-icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--green-dim);
+    border: 1px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+    animation: popIn 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+  }
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .success-title {
+    font-family: var(--font-display);
+    font-size: 42px;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    margin-bottom: 0.5rem;
+  }
+  .success-sub {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    opacity: 0;
+    animation: fadeIn 0.6s ease 1.3s forwards;
+  }
+  .footer a { color: var(--red); text-decoration: none; opacity: 0.7; }
+  .footer a:hover { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="header">
+    <div class="logo-eyebrow">Whitelist Application</div>
+    <div class="title">
+      NEON<br>
+      <span class="title-neon">NYAN</span>
+    </div>
+    <p class="subtitle">Digital creatures in a neon world</p>
+    <div class="meta-row">
+      <span class="pill live"><span class="pill-dot"></span>WL Open</span>
+      <span class="pill">1111 Supply</span>
+      <span class="pill">One drop at a time</span>
+    </div>
+  </header>
+
+  <div id="form-area">
+    <div class="progress-wrap">
+      <div class="progress-labels">
+        <span>Progress</span>
+        <span id="prog-txt">0 / 4 complete</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar" id="prog-bar"></div>
+      </div>
+    </div>
+
+    <div class="steps" id="steps">
+
+      <!-- Step 1 -->
+      <div class="step visible" id="card1">
+        <div class="step-head">
+          <div class="step-badge" id="num1">01</div>
+          <div class="step-title">Follow @NeonNyan_eth</div>
+        </div>
+        <p class="step-sub">Follow the official X account to stay in the loop on the drop.</p>
+        <a class="action-btn" href="https://x.com/NeonNyan_eth" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.766l7.33-8.363L1.612 2.25H8.6l4.23 5.594 5.414-5.594zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Follow on X
+        </a>
+        <input class="field" id="xUsername" type="text" placeholder="@YourUsername" oninput="validate()" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step visible" id="card2">
+        <div class="step-head">
+          <div class="step-badge" id="num2">02</div>
+          <div class="step-title">Like + Retweet</div>
+        </div>
+        <p class="step-sub">Engage with the pinned post — like and RT to spread the signal.</p>
+        <a class="action-btn" href="https://x.com/NeonNyan_eth/status/2054953908066284020?s=20" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.766l7.33-8.363L1.612 2.25H8.6l4.23 5.594 5.414-5.594z"/></svg>
+          View Post
+        </a>
+        <div class="check-row" onclick="toggleCheck()">
+          <div class="checkbox" id="chkBox">
+            <svg class="check-mark" width="11" height="11" viewBox="0 0 12 12" fill="none">
+              <polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="check-label">I have liked and retweeted the post</span>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step visible" id="card3">
+        <div class="step-head">
+          <div class="step-badge" id="num3">03</div>
+          <div class="step-title">Drop a Comment</div>
+        </div>
+        <p class="step-sub">Leave a comment on the post, then paste your comment link below.</p>
+        <a class="action-btn" href="https://x.com/NeonNyan_eth/status/2054953908066284020?s=20" target="_blank">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Comment Now
+        </a>
+        <input class="field" id="commentLink" type="text" placeholder="https://x.com/you/status/..." oninput="validate()" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <!-- Step 4 -->
+      <div class="step visible" id="card4">
+        <div class="step-head">
+          <div class="step-badge" id="num4">04</div>
+          <div class="step-title">Drop Your Wallet</div>
+        </div>
+        <p class="step-sub">Enter your ETH wallet address — this is where your WL spot is registered.</p>
+        <input class="field" id="wallet" type="text" placeholder="0x..." oninput="validate()" autocomplete="off" spellcheck="false" />
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="submit-wrap">
+      <button class="submit-btn" id="submitBtn" disabled onclick="submitForm()">Apply for Whitelist</button>
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div class="success" id="successMsg">
+    <div class="success-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00e090" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <div class="success-title">You're In</div>
+    <p class="success-sub">Application received · Stay tuned · 1111</p>
+  </div>
+
+  <div class="footer">
+    <a href="https://x.com/NeonNyan_eth" target="_blank">@NeonNyan_eth</a> &nbsp;·&nbsp; Neon Nyan NFT &nbsp;·&nbsp; All rights reserved
+  </div>
+
+</div>
+
+<script>
+  let lrtDone = false;
+  let completedSteps = 0;
+
+  function toggleCheck() {
+    lrtDone = !lrtDone;
+    const box = document.getElementById('chkBox');
+    if (lrtDone) box.classList.add('checked'); else box.classList.remove('checked');
+    updateCard('card2', 'num2', lrtDone, '02');
+    validate();
+  }
+
+  function updateCard(cardId, numId, ok, fallback) {
+    const card = document.getElementById(cardId);
+    const num  = document.getElementById(numId);
+    if (ok) {
+      card.classList.add('done');
+      num.textContent = '✓';
+    } else {
+      card.classList.remove('done');
+      num.textContent = fallback;
+    }
+  }
+
+  function validate() {
+    const username = document.getElementById('xUsername').value.trim();
+    const comment  = document.getElementById('commentLink').value.trim();
+    const wallet   = document.getElementById('wallet').value.trim();
+
+    const s1 = username.length > 1;
+    const s2 = lrtDone;
+    const s3 = comment.startsWith('http');
+    const s4 = wallet.startsWith('0x') && wallet.length >= 40;
+
+    updateCard('card1','num1', s1, '01');
+    updateCard('card3','num3', s3, '03');
+    updateCard('card4','num4', s4, '04');
+
+    // Field valid states
+    setFieldValid('xUsername', s1);
+    setFieldValid('commentLink', s3);
+    setFieldValid('wallet', s4);
+
+    completedSteps = [s1,s2,s3,s4].filter(Boolean).length;
+    const pct = (completedSteps / 4) * 100;
+    document.getElementById('prog-bar').style.width = pct + '%';
+    document.getElementById('prog-txt').textContent = completedSteps + ' / 4 complete';
+
+    document.getElementById('submitBtn').disabled = !(s1 && s2 && s3 && s4);
+  }
+
+  function setFieldValid(id, ok) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (ok) el.classList.add('valid'); else el.classList.remove('valid');
+  }
+
+  function submitForm() {
+    document.getElementById('form-area').style.display = 'none';
+    const msg = document.getElementById('successMsg');
+    msg.style.display = 'block';
+  }
+</script>
+</body>
+</html>
